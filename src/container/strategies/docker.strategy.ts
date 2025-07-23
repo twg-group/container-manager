@@ -151,16 +151,68 @@ export class DockerStrategy extends BaseStrategy {
   }
 
   private parseLogs(logs: string): LogDto[] {
-    return logs
-      .split('\n')
-      .filter((line) => line.trim())
-      .map((line) => {
-        const [timestamp, stream, ...messageParts] = line.split(' ');
-        return {
-          timestamp: timestamp.replace('T', ' ').replace('Z', ''),
-          stream: stream.replace(':', ''),
-          message: messageParts.join(' '),
-        };
-      });
+    const result: LogDto[] = [];
+    const lines = logs.split('\n').filter((line) => line.trim().length > 0);
+    for (const line of lines) {
+      try {
+        const dockerMatch = line.match(
+          /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)\s(stdout|stderr)\s(.+)/,
+        );
+        if (dockerMatch) {
+          result.push({
+            timestamp: dockerMatch[1].replace('T', ' ').replace('Z', ''),
+            stream: dockerMatch[2] as 'stdout' | 'stderr',
+            message: dockerMatch[3].trim(),
+          });
+          continue;
+        }
+        if (line.charCodeAt(0) <= 31) {
+          const timestampMatch = line.match(
+            /(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}[.,]\d+Z?)/,
+          );
+          if (timestampMatch) {
+            const timestamp = timestampMatch[1]
+              .replace('T', ' ')
+              .replace(/[,Z]/g, '');
+            const messageStart =
+              timestampMatch.index! + timestampMatch[0].length;
+            const message = line
+              .slice(messageStart)
+              .replace(/[\x00-\x1F]/g, '')
+              .trim();
+
+            if (message) {
+              result.push({
+                timestamp,
+                stream: line.includes('stderr') ? 'stderr' : 'stdout',
+                message,
+              });
+            }
+          }
+          continue;
+        }
+        const cleanLine = line
+          .replace(/[\x00-\x1F]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const fallbackTimestamp = new Date()
+          .toISOString()
+          .replace('T', ' ')
+          .replace('Z', '');
+
+        result.push({
+          timestamp: fallbackTimestamp,
+          stream: cleanLine.toLowerCase().includes('error')
+            ? 'stderr'
+            : 'stdout',
+          message: cleanLine,
+        });
+      } catch (e) {
+        console.error('Failed to parse log line:', line, e);
+      }
+    }
+    return result.filter(
+      (log) => log.message.length > 0 && log.message !== 'Z',
+    );
   }
 }

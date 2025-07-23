@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ContainerService } from './container.service';
 import { DeployConfigDto, InfoDto, LogDto } from '@dto';
+import { ListFilterDto } from '@dto/list-filter.dto';
 
 @Controller('containers')
 export class ContainerController {
@@ -39,8 +40,10 @@ export class ContainerController {
   }
 
   @Get()
-  async list(): Promise<{ containers: InfoDto[] }> {
-    const containers = await this.containerService.list();
+  async list(
+    @Query() filter: ListFilterDto,
+  ): Promise<{ containers: InfoDto[] }> {
+    const containers = await this.containerService.list(filter);
     return { containers };
   }
 

@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { BaseStrategy } from '@strategies';
 import { DeployConfigDto, InfoDto, LogDto } from '@dto';
+import { ListFilterDto } from '@dto/list-filter.dto';
 
 @Injectable()
 export class ContainerService {
@@ -38,9 +39,25 @@ export class ContainerService {
     }
   }
 
-  async list(): Promise<InfoDto[]> {
+  async list(filter?: ListFilterDto): Promise<InfoDto[]> {
     try {
-      return await this.strategy.list();
+      const list = await this.strategy.list();
+      if (!filter) {
+        return list;
+      }
+      return list.filter(
+        (dto) =>
+          (!filter.id || dto.id.includes(filter.id)) &&
+          (!filter.name || dto.name.includes(filter.name)) &&
+          (!filter.image || dto.image.includes(filter.image)) &&
+          (!filter.status || dto.status === filter.status) &&
+          (!filter.ports ||
+            filter.ports.every((port) => dto.ports.includes(port))) &&
+          (!filter.createdFrom ||
+            new Date(dto.createdAt) >= new Date(filter.createdFrom)) &&
+          (!filter.createdTo ||
+            new Date(dto.createdAt) <= new Date(filter.createdTo)),
+      );
     } catch (error) {
       this.logError(error, 'Failed to list containers');
       return [];
