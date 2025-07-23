@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BaseStrategy } from './base.strategy';
 import { DeployConfigDto } from '@dto/deploy-config.dto';
 import { InfoDto } from '@dto/info.dto';
@@ -24,5 +24,4 @@ export class KubernetesStrategy extends BaseStrategy {
   logs(id: string, since?: string, tail?: number): Promise<LogDto[]> {
     throw new Error('Method not implemented.');
   }
-  private readonly logger = new Logger(KubernetesStrategy.name);
 }
