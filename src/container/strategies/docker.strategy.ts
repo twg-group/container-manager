@@ -68,7 +68,9 @@ export class DockerStrategy extends BaseStrategy {
   async list(): Promise<InfoDto[]> {
     try {
       const containers = await this.docker.listContainers({ all: true });
-      return containers.map((container) => this.formatContainerInfo(container));
+      return await Promise.all(
+        containers.map((container) => this.formatContainerInfo(container)),
+      );
     } catch (error) {
       this.handleError(error, 'Failed to list containers');
     }
@@ -134,19 +136,36 @@ export class DockerStrategy extends BaseStrategy {
     return env ? Object.entries(env).map(([k, v]) => `${k}=${v}`) : [];
   }
 
-  private formatContainerInfo(container: Docker.ContainerInfo): InfoDto {
-    const ports = (container.Ports || []).map((p) =>
-      `${p.PublicPort || ''}:${p.PrivatePort || ''}`.replace(/^:/, ''),
+  private async formatContainerInfo(
+    container: Docker.ContainerInfo,
+  ): Promise<InfoDto> {
+    const containerInstance = this.docker.getContainer(container.Id);
+    const details = await containerInstance.inspect();
+    // Формируем порты
+    const ports = (container.Ports || [])
+      .map((p) =>
+        p.PublicPort ? `${p.PublicPort}:${p.PrivatePort}` : `${p.PrivatePort}`,
+      )
+      .filter(Boolean);
+    const env = (details.Config?.Env || []).reduce(
+      (acc, envLine) => {
+        const [key, ...value] = envLine.split('=');
+        if (key) acc[key] = value.join('=');
+        return acc;
+      },
+      {} as Record<string, string>,
     );
     return {
       id: container.Id,
-      name: container.Names[0].replace(/^\//, ''),
+      name: container.Names?.[0]?.replace(/^\//, '') || 'unnamed',
       image: container.Image,
       status: container.State,
       ports: [...new Set(ports)].sort(
         (a, b) => a.length - b.length || a.localeCompare(b),
       ),
       createdAt: new Date(container.Created * 1000).toISOString(),
+      labels: details.Config?.Labels || {},
+      env,
     };
   }
 

@@ -4,7 +4,11 @@ import {
   IsArray,
   IsISO8601,
   ArrayNotEmpty,
+  IsOptional,
+  IsObject,
 } from 'class-validator';
+import { IsValidLabels } from '../decorators/is-valid-labels';
+import { IsValidEnvObject } from '../decorators/is-valid-env-object';
 
 export class InfoDto {
   @IsString()
@@ -31,4 +35,13 @@ export class InfoDto {
   @IsISO8601()
   @IsNotEmpty()
   public readonly createdAt: string;
+
+  @IsOptional()
+  @IsObject()
+  @IsValidLabels()
+  public readonly labels?: Record<string, string>;
+
+  @IsOptional()
+  @IsValidEnvObject()
+  public readonly env?: Record<string, string>;
 }

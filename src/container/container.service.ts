@@ -41,23 +41,37 @@ export class ContainerService {
 
   async list(filter?: ListFilterDto): Promise<InfoDto[]> {
     try {
-      const list = await this.strategy.list();
-      if (!filter) {
-        return list;
-      }
-      return list.filter(
-        (dto) =>
-          (!filter.id || dto.id.includes(filter.id)) &&
-          (!filter.name || dto.name.includes(filter.name)) &&
-          (!filter.image || dto.image.includes(filter.image)) &&
-          (!filter.status || dto.status === filter.status) &&
+      const containers = await this.strategy.list();
+      if (!filter) return containers;
+      return containers.filter((container) => {
+        const basicMatch =
+          (!filter.id || container.id.includes(filter.id)) &&
+          (!filter.name || container.name.includes(filter.name)) &&
+          (!filter.image || container.image.includes(filter.image)) &&
+          (!filter.status || container.status === filter.status) &&
           (!filter.ports ||
-            filter.ports.every((port) => dto.ports.includes(port))) &&
+            filter.ports.every((p) => container.ports.includes(p))) &&
           (!filter.createdFrom ||
-            new Date(dto.createdAt) >= new Date(filter.createdFrom)) &&
+            new Date(container.createdAt) >= new Date(filter.createdFrom)) &&
           (!filter.createdTo ||
-            new Date(dto.createdAt) <= new Date(filter.createdTo)),
-      );
+            new Date(container.createdAt) <= new Date(filter.createdTo));
+        const labelsMatch =
+          !filter.labels ||
+          filter.labels.every((filterLabel) => {
+            return Object.entries(filterLabel).every(
+              ([key, value]) =>
+                container.labels && container.labels[key] === value,
+            );
+          });
+        const envMatch =
+          !filter.env ||
+          filter.env.every((filterEnv) => {
+            return Object.entries(filterEnv).every(
+              ([key, value]) => container.env && container.env[key] === value,
+            );
+          });
+        return basicMatch && labelsMatch && envMatch;
+      });
     } catch (error) {
       this.logError(error, 'Failed to list containers');
       return [];
