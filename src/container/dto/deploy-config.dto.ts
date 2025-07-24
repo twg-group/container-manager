@@ -81,17 +81,4 @@ export class DeployConfigDto {
     }
     return instance;
   }
-
-  validate(): void {
-    const errors = validateSync(this);
-    if (errors.length > 0) {
-      const message = errors
-        .map(
-          (e) =>
-            `${e.property}: ${Object.values(e.constraints ?? {}).join(', ')}`,
-        )
-        .join(' | ');
-      throw new Error(`Validation failed: ${message}`);
-    }
-  }
 }
