@@ -23,7 +23,7 @@ export interface SwarmTaskExtended extends Task {
 
 @Injectable()
 export class SwarmStrategy extends BaseStrategy {
-  private readonly logger = new Logger(this.constructor.name);
+  private readonly logger = new Logger(SwarmStrategy.name);
   private readonly docker: Docker;
 
   constructor() {

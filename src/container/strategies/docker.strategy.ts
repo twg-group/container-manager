@@ -1,5 +1,5 @@
 import Docker from 'dockerode';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   DeployConfigDto,
   InfoDto,
@@ -11,6 +11,7 @@ import { BaseStrategy } from './base.strategy';
 
 @Injectable()
 export class DockerStrategy extends BaseStrategy {
+  private readonly logger = new Logger(DockerStrategy.name);
   private readonly docker: Docker;
 
   constructor() {
@@ -227,7 +228,7 @@ export class DockerStrategy extends BaseStrategy {
           message: cleanLine,
         });
       } catch (e) {
-        console.error('Failed to parse log line:', line, e);
+        this.logger.error('Failed to parse log line:', line, e);
       }
     }
     return result.filter(
