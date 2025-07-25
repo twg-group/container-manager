@@ -88,13 +88,18 @@ export class SwarmStrategy extends BaseStrategy {
   }
 
   private createPortConfigs(ports?: PortBindingDto[]): Docker.PortConfig[] {
-    if (!ports || ports.length === 0) return [];
-    return ports.map((port) => ({
-      Protocol: (port.protocol as 'tcp' | 'udp') || 'tcp',
-      TargetPort: port.containerPort,
-      PublishedPort: port.hostPort,
-      PublishMode: 'ingress',
-    }));
+    if (!ports?.length) {
+      return [];
+    }
+    return ports
+      .filter((port) => port.containerPort)
+      .map((port) => ({
+        Protocol: (port.protocol?.toLowerCase() as 'tcp' | 'udp') || 'tcp',
+        TargetPort: Number(port.containerPort),
+        PublishedPort: port.hostPort ? Number(port.hostPort) : undefined,
+        PublishMode: 'ingress' as const,
+      }))
+      .filter((config) => !isNaN(config.TargetPort));
   }
 
   private createMounts(volumes?: VolumeBindingDto[]): Docker.MountConfig {

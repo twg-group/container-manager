@@ -1,15 +1,16 @@
 import { Expose } from 'class-transformer';
-import { IsInt, IsOptional, IsPort, IsString, Min } from 'class-validator';
+import { IsOptional, IsPort, IsString } from 'class-validator';
 
 export class PortBindingDto {
   @Expose()
-  @IsInt()
-  @Min(1)
-  hostPort: number;
+  @IsOptional()
+  @IsPort()
+  hostPort?: string;
 
   @Expose()
+  @IsOptional()
   @IsPort()
-  containerPort: number;
+  containerPort?: string;
 
   @Expose()
   @IsOptional()

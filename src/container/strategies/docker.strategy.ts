@@ -113,12 +113,17 @@ export class DockerStrategy extends BaseStrategy {
   private createPortBindings(
     ports?: PortBindingDto[],
   ): Record<string, Docker.PortBinding[]> {
-    if (!ports) return {};
-
+    if (!ports?.length) {
+      return {};
+    }
     return ports.reduce(
       (acc, port) => {
-        const key = `${port.containerPort}/${port.protocol || 'tcp'}`;
-        acc[key] = [{ HostPort: port.hostPort.toString() }];
+        if (!port.containerPort) {
+          return acc;
+        }
+        const protocol = port.protocol || 'tcp';
+        const key = `${port.containerPort}/${protocol}`;
+        acc[key] = port.hostPort ? [{ HostPort: port.hostPort }] : [];
         return acc;
       },
       {} as Record<string, Docker.PortBinding[]>,
