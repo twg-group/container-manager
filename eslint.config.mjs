@@ -16,7 +16,7 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ['**/*.mjs', 'db/**/*', 'src/utils/swagger/responses'],
+    ignores: ['**/*.mjs', 'db/**/*', 'src/utils/swagger/responses', '**/*.spec.ts', '**/*.e2e-spec.ts'],
   },
   ...compat.extends(
     'plugin:@typescript-eslint/recommended',

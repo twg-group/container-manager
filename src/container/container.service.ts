@@ -1,7 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { BaseStrategy } from '@strategies';
-import { DeployConfigDto, InfoDto, LogDto } from '@dto';
-import { ListFilterDto } from '@dto/list-filter.dto';
+import { DeployConfigDto, InfoDto, LogDto, ListFilterDto } from '@dto';
 
 @Injectable()
 export class ContainerService {

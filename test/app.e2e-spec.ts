@@ -1,13 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { Express } from 'express';
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication<Express>;
+  let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -16,10 +15,23 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  afterAll(async () => {
+    await app.close();
+  });
+
+  describe('/health (GET)', () => {
+    it('should return service status', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/health')
+        .expect(200);
+
+      expect(response.body).toEqual({
+        status: 'ok',
+        timestamp: expect.any(String)
+      });
+
+      const timestamp = new Date(response.body.timestamp);
+      expect(isNaN(timestamp.getTime())).toBe(false);
+    });
   });
 });

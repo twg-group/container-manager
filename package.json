@@ -1,8 +1,8 @@
 {
-  "name": "boilerplate",
+  "name": "container-manager",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "rest api for Docker, Swarm, Kubernetes",
+  "author": "mat@twg.su",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -77,6 +77,12 @@
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^@dto/(.*)$": "<rootDir>/container/dto/$1",
+      "^@dto$": "<rootDir>/container/dto/index",
+      "^@strategies/(.*)$": "<rootDir>/container/strategies/$1",
+      "^@strategies$": "<rootDir>/container/strategies/index"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

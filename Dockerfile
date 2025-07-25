@@ -1,62 +1,35 @@
 FROM node:22-alpine AS base
 WORKDIR /home/node/app
-COPY *.json ./
-COPY .yarnrc ./
-COPY yarn.lock ./
-RUN yarn install
-CMD ["sh"]
+COPY package.json yarn.lock .yarnrc ./
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    yarn install --frozen-lockfile
 
-FROM base AS build
-WORKDIR /home/node/app
-RUN apk add mc
-RUN apk add vim
-RUN apk add nano
+FROM base AS dev
+ENV NODE_ENV=development
+ARG DEV_TOOLS="mc vim nano git"
+RUN apk add --no-cache $DEV_TOOLS
+COPY webpack.config.js jest.config.ts ./
+COPY .eslintrc .prettierrc tsconfig.json ./
 COPY src/ ./src/
 COPY test/ ./test/
-COPY .prettierrc ./
-COPY eslint.config.mjs ./
+CMD ["yarn", "start:dev"]
+
+FROM base AS staging
+ENV NODE_ENV=staging
+ENV DEBUG=true
+COPY tsconfig.json ./
+COPY src/ ./src/
 RUN yarn build
-CMD ["sh"]
+CMD ["yarn", "start"]
 
-FROM build AS dev
-ENV NODE_ENV=development
-ENV MODE=APP
-WORKDIR /home/node/app
-CMD ["yarn", "start:dev"]
-
-FROM build AS cron-dev
-ENV NODE_ENV=development
-ENV MODE=CRON
-WORKDIR /home/node/app
-CMD ["yarn", "start:dev"]
-
-FROM base as migrations
+FROM node:22-alpine AS prod
 ENV NODE_ENV=production
 WORKDIR /home/node/app
-COPY db/ ./db/
-COPY .sequelizerc ./
-CMD ["sh"]
-
-FROM node:22-alpine AS pre-prod
-ENV NODE_ENV=production
-WORKDIR /home/node/app
-COPY *.json ./
-COPY .yarnrc ./
-COPY yarn.lock ./
-RUN yarn install --production
-
-FROM pre-prod AS cron-prod
-ENV NODE_ENV=production
-ENV MODE=CRON
-WORKDIR /home/node/app
-COPY --from=pre-prod /home/node/app/node_modules/ ./node_modules/
-COPY --from=build /home/node/app/dist/ ./dist/
-CMD ["node", "dist/main"]
-
-FROM pre-prod AS prod
-ENV NODE_ENV=production
-ENV MODE=APP
-WORKDIR /home/node/app
-COPY --from=pre-prod /home/node/app/node_modules/ ./node_modules/
-COPY --from=build /home/node/app/dist/ ./dist/
+COPY package.json yarn.lock ./
+RUN yarn install --production --frozen-lockfile && yarn cache clean
+COPY --from=staging /home/node/app/dist ./dist
+USER node
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD curl -f http://localhost:${PORT:-3000}/health || exit 1
+EXPOSE ${PORT:-3000}
 CMD ["node", "dist/main"]

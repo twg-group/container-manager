@@ -1,9 +1,19 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
+  "rootDir": "../",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
-  }
+  },
+  "moduleNameMapper": {
+    "^@dto/(.*)$": "<rootDir>/src/container/dto/$1",
+    "^@dto$": "<rootDir>/src/container/dto/index",
+    "^@strategies/(.*)$": "<rootDir>/src/container/strategies/$1",
+    "^@strategies$": "<rootDir>/src/container/strategies/index"
+  },
+  "testPathIgnorePatterns": [
+    "/node_modules/",
+    "/dist/"
+  ]
 }
