@@ -82,7 +82,7 @@ describe('ContainerController', () => {
   describe('POST /containers', () => {
     const deployConfig: DeployConfigDto = {
       image: 'nginx:latest',
-      ports: [{ hostPort: 8080, containerPort: 80 }],
+      ports: [{ hostPort: "8080", containerPort: "80" }],
     };
 
     it('should deploy container', async () => {

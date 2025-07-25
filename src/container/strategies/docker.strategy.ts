@@ -58,7 +58,6 @@ export class DockerStrategy extends BaseStrategy {
         },
         Labels: config.labels,
       });
-
       await container.start();
       return container.id;
     } catch (error) {
