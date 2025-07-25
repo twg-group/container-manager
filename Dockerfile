@@ -30,6 +30,6 @@ RUN yarn install --production --frozen-lockfile && yarn cache clean
 COPY --from=staging /home/node/app/dist ./dist
 USER node
 HEALTHCHECK --interval=30s --timeout=3s \
-    CMD curl -f http://localhost:${PORT:-3000}/health || exit 1
+    CMD wget -qO- http://localhost:${PORT:-3000}/health | grep -q '"status":"ok"' || exit 1
 EXPOSE ${PORT:-3000}
 CMD ["node", "dist/main"]
