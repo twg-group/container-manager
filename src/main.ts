@@ -2,11 +2,18 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
+import { Logger } from '@twg-group/nestjs-logger';
+import process from 'process';
+import { loggerOptions } from './logger.options';
 
 dotenv.config();
 
+const logger = new Logger(undefined, loggerOptions);
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -18,11 +25,13 @@ async function bootstrap() {
     }),
   );
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
+  await app.listen(port).then(() => {
+    logger.info(
+      `Application is running on: http://localhost:${port}`,
+      'NestApplication',
+    );
+    logger.debug(`DEBUG MODE: ON`, 'NestApplication');
+  });
 }
 
-bootstrap().catch((err) => {
-  console.error('Failed to start application:', err);
-  process.exit(1);
-});
+void bootstrap();
