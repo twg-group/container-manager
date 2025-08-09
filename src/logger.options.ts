@@ -12,7 +12,5 @@ if (debug) {
 }
 
 export const loggerOptions: LoggerOptions = {
-  prefix: 'test',
-  id: '',
   logLevels,
 };
