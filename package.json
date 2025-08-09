@@ -4,6 +4,7 @@
   "description": "Container management for Docker, Swarm, Kubernetes",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "private": false,
   "author": "Matvey Alekseev",
   "license": "MIT",
   "keywords": ["container", "docker", "kubernetes", "manager"],
