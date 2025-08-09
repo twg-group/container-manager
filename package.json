@@ -1,5 +1,5 @@
 {
-  "name": "@mat-twg/container-manager",
+  "name": "@twg-group/container-manager",
   "version": "1.0.0",
   "description": "Container management for Docker, Swarm, Kubernetes",
   "main": "dist/index.js",
