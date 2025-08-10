@@ -1,16 +1,15 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { BaseStrategy } from '@strategies';
+import { BaseStrategy } from 'src/container/strategies';
 import { DeployConfigDto, InfoDto, LogDto, ListFilterDto } from '@dto';
 import { Logger } from '@twg-group/nestjs-logger';
 import { CONTAINER_STRATEGY } from './constants';
 
 @Injectable()
 export class ContainerService {
-  private readonly logger = new Logger();
-
   constructor(
     @Inject(CONTAINER_STRATEGY)
     private readonly strategy: BaseStrategy,
+    private readonly logger: Logger,
   ) {}
 
   async start(id: string): Promise<void> {

@@ -1,5 +1,9 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { DockerStrategy, KubernetesStrategy, SwarmStrategy } from '@strategies';
+import {
+  DockerStrategy,
+  KubernetesStrategy,
+  SwarmStrategy,
+} from 'src/container/strategies';
 import { ContainerController } from './container.controller';
 import { ContainerService } from './container.service';
 import { CONTAINER_STRATEGY } from './constants';
@@ -21,14 +25,13 @@ export class ContainerModule {
 
   static forRoot(): DynamicModule {
     const type = (process.env[CONTAINER_STRATEGY] || 'docker').toLowerCase();
-    const strategy = ContainerModule.getStrategy(type);
     return {
       module: ContainerModule,
       controllers: [ContainerController],
       providers: [
         {
           provide: CONTAINER_STRATEGY,
-          useClass: strategy,
+          useClass: ContainerModule.getStrategy(type),
         },
         ContainerService,
       ],

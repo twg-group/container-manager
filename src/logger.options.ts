@@ -13,4 +13,5 @@ if (debug) {
 
 export const loggerOptions: LoggerOptions = {
   logLevels,
+  // jsonFormat: true,
 };

@@ -2,6 +2,11 @@ import { HttpException } from '@nestjs/common';
 import { DeployConfigDto, InfoDto, LogDto, PortBindingDto } from '@dto';
 import { Logger } from '@twg-group/nestjs-logger';
 
+export interface StrategyError extends Error {
+  statusCode?: number;
+  json?: { message?: string };
+}
+
 export abstract class BaseStrategy {
   /**
    * @param logger
@@ -82,17 +87,16 @@ export abstract class BaseStrategy {
   }
 
   /**
-   * Standard error handler
-   * @param error Caught error
-   * @param context Additional error context
-   * @throws Formatted error
+   * Handles an error by logging it and throwing an HTTP exception.
+   * @param error - The error to be processed (can be of any type)
+   * @param context - Optional context string to provide additional error context
+   * @returns This function never returns a value; it always throws an exception
+   * @throws {HttpException} Always throws an HttpException with message, status code, and optional context
    */
-  protected handleError(
-    error: { message?: string; statusCode?: number },
-    context = '',
-  ): never {
-    const message = error.message || 'Unknown error occurred';
-    const statusCode = error.statusCode ?? 500;
+  protected handleError(error: unknown, context = ''): never {
+    const err = error as StrategyError;
+    const message = err.message || 'Unknown error occurred';
+    const statusCode = err.statusCode ?? 500;
     this.logger.error(error);
     throw new HttpException(
       { message, context: context || undefined, statusCode },
