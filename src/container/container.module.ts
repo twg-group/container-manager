@@ -1,47 +1,34 @@
-import { DynamicModule, Logger, Module } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { DockerStrategy, KubernetesStrategy, SwarmStrategy } from '@strategies';
 import { ContainerController } from './container.controller';
 import { ContainerService } from './container.service';
+import { CONTAINER_STRATEGY } from './constants';
 
 @Module({})
 export class ContainerModule {
-  private static logger = new Logger(ContainerModule.name);
-
   private static getStrategy(type: string) {
     switch (type) {
       case 'docker':
-        return new DockerStrategy();
+        return DockerStrategy;
       case 'swarm':
-        return new SwarmStrategy();
+        return SwarmStrategy;
       case 'kubernetes':
-        return new KubernetesStrategy();
+        return KubernetesStrategy;
       default:
-        return undefined;
+        throw new Error(`Unsupported strategy: ${type}`);
     }
   }
 
   static forRoot(): DynamicModule {
+    const type = (process.env[CONTAINER_STRATEGY] || 'docker').toLowerCase();
+    const strategy = ContainerModule.getStrategy(type);
     return {
       module: ContainerModule,
       controllers: [ContainerController],
       providers: [
         {
-          provide: 'CONTAINER_STRATEGY',
-          useFactory: () => {
-            const strategyType = (
-              process.env.CONTAINER_STRATEGY || 'docker'
-            ).toLowerCase();
-            ContainerModule.logger.log(`Initializing ${strategyType} strategy`);
-            const strategy = ContainerModule.getStrategy(strategyType);
-            if (!strategy) {
-              const error = new Error(
-                `Failed to initialize strategy: ${strategyType}`,
-              );
-              ContainerModule.logger.error(error.message);
-              throw error;
-            }
-            return strategy;
-          },
+          provide: CONTAINER_STRATEGY,
+          useClass: strategy,
         },
         ContainerService,
       ],

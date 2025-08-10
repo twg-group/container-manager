@@ -1,13 +1,15 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { BaseStrategy } from '@strategies';
 import { DeployConfigDto, InfoDto, LogDto, ListFilterDto } from '@dto';
+import { Logger } from '@twg-group/nestjs-logger';
+import { CONTAINER_STRATEGY } from './constants';
 
 @Injectable()
 export class ContainerService {
-  private readonly logger = new Logger(ContainerService.name);
+  private readonly logger = new Logger();
 
   constructor(
-    @Inject('CONTAINER_STRATEGY')
+    @Inject(CONTAINER_STRATEGY)
     private readonly strategy: BaseStrategy,
   ) {}
 
@@ -96,7 +98,6 @@ export class ContainerService {
     try {
       await this.strategy.remove(id);
     } catch (error) {
-      this.logError(error, `Failed to remove ${id}`);
       throw error;
     }
   }

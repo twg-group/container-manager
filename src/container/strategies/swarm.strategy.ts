@@ -1,5 +1,5 @@
 import Docker, { Task } from 'dockerode';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   DeployConfigDto,
   InfoDto,
@@ -9,6 +9,7 @@ import {
 } from '@dto';
 import { BaseStrategy } from './base.strategy';
 import { plainToInstance } from 'class-transformer';
+import { Logger } from '@twg-group/nestjs-logger';
 
 export interface SwarmTaskExtended extends Task {
   Status?: {
@@ -23,11 +24,10 @@ export interface SwarmTaskExtended extends Task {
 
 @Injectable()
 export class SwarmStrategy extends BaseStrategy {
-  private readonly logger = new Logger(SwarmStrategy.name);
   private readonly docker: Docker;
 
-  constructor() {
-    super();
+  constructor(protected logger: Logger) {
+    super(logger);
     this.docker = new Docker({
       socketPath: process.env.DOCKER_SOCKET || '/var/run/docker.sock',
     });

@@ -1,5 +1,5 @@
 import Docker from 'dockerode';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import {
   DeployConfigDto,
   InfoDto,
@@ -8,14 +8,14 @@ import {
   VolumeBindingDto,
 } from '@dto';
 import { BaseStrategy } from './base.strategy';
+import { Logger } from '@twg-group/nestjs-logger';
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class DockerStrategy extends BaseStrategy {
-  private readonly logger = new Logger(DockerStrategy.name);
   private readonly docker: Docker;
 
-  constructor() {
-    super();
+  constructor(protected readonly logger: Logger) {
+    super(logger);
     this.docker = new Docker({
       socketPath: process.env.DOCKER_SOCKET || '/var/run/docker.sock',
     });

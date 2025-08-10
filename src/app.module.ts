@@ -5,7 +5,7 @@ import { LoggerModule } from '@twg-group/nestjs-logger';
 import { loggerOptions } from './logger.options';
 
 @Module({
-  imports: [ContainerModule.forRoot(), LoggerModule.forRoot({ loggerOptions })],
+  imports: [LoggerModule.forRoot({ loggerOptions }), ContainerModule.forRoot()],
   controllers: [AppController],
 })
 export class AppModule {}

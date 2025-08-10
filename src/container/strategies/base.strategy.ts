@@ -1,8 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { DeployConfigDto, InfoDto, LogDto, PortBindingDto } from '@dto';
+import { Logger } from '@twg-group/nestjs-logger';
 
-@Injectable()
 export abstract class BaseStrategy {
+  /**
+   * @param logger
+   */
+  constructor(protected readonly logger: Logger) {}
+
   /**
    * Starts a stopped container/service
    * @param id Container/service identifier
@@ -82,10 +87,16 @@ export abstract class BaseStrategy {
    * @param context Additional error context
    * @throws Formatted error
    */
-  protected handleError(error: unknown, context = ''): never {
-    const message =
-      error instanceof Error ? error.message : 'Unknown error occurred';
-
-    throw new Error(context ? `${context}: ${message}` : message);
+  protected handleError(
+    error: { message?: string; statusCode?: number },
+    context = '',
+  ): never {
+    const message = error.message || 'Unknown error occurred';
+    const statusCode = error.statusCode ?? 500;
+    this.logger.error(error);
+    throw new HttpException(
+      { message, context: context || undefined, statusCode },
+      statusCode,
+    );
   }
 }
