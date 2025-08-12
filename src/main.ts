@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from '@twg-group/nestjs-logger';
 import process from 'process';
-import { loggerOptions } from './logger.options';
+import { loggerOptions } from './config/logger.options';
 
 dotenv.config();
 
